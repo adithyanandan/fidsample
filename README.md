@@ -107,3 +107,11 @@ public class Main {
             ]
           }
         ];
+
+        "<jqx-combo-box id='populateEx' ng-disabled=\"$ctrl.disabledFields\" remove-model ng-model=\"$ctrl.populationOptEx\" ng-disabled=' $ctrl.disabledFields'" +
+			"jqx-settings=\"populationSettingsEx\" jqx-on-close=\"changeHandler_POPULATIONINDEx(event)\" style=\"margin-top: 5px;\" spark-change-data></jqx-combo-box>" +
+
+			"</div>" +
+			"<div class=\"col-sm-1 deleteIcon\">" +
+			"<a href=\"\" ng-disabled=\"$ctrl.disabledFields\"ng-class=\"{disabled: $ctrl.disabledFields}\" ng-click=\"$ctrl.deleteComponentEx($event,'populationOptEx',5)\"> <span class=\"glyphicon glyphicon-trash\"></span></a>" +
+			"</div>";
