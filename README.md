@@ -137,3 +137,16 @@ public class Main {
     }
 };
 jqx-on-change=\"$ctrl.changeHandler_POPULATIONIND(event)\" jqx-on-close=\"$ctrl.closeHandler_POPULATIONIND(event)\"
+
+ $scope.populationSettings = {
+			   source: populationOptions,
+			   showArrow: true,
+			   multiSelect: true,
+			   width: '95%',
+			   height: 25,
+			   checkboxes: true,
+			   created: function (args) {
+				   $scope.pop_Opt = args.instance;
+				   checkCombo($scope.pop_Opt, $ctrl.populationOpt);
+			   }
+		   };
