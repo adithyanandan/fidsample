@@ -115,3 +115,13 @@ public class Main {
 			"<div class=\"col-sm-1 deleteIcon\">" +
 			"<a href=\"\" ng-disabled=\"$ctrl.disabledFields\"ng-class=\"{disabled: $ctrl.disabledFields}\" ng-click=\"$ctrl.deleteComponentEx($event,'populationOptEx',5)\"> <span class=\"glyphicon glyphicon-trash\"></span></a>" +
 			"</div>";
+
+	$ctrl.population = "<div class=\"col-sm-6 alignRecepient\">" +
+			"<jqx-combo-box id='populate'ng-disabled=\"$ctrl.disabledFields\" remove-model ng-model=\"$ctrl.populationOpt\" ng-disabled=' $ctrl.disabledFields'" +
+			"jqx-settings=\"populationSettings\" jqx-on-close=\"changeHandler_POPULATIONIND(event)\" style=\"margin-top: 5px;\" spark-change-data></jqx-combo-box>" +
+
+			"</div>" +
+			"<div class=\"col-sm-1 deleteIcon\">" +
+			"<a href=\"\" ng-disabled=\"$ctrl.disabledFields\" ng-class=\"{disabled: $ctrl.disabledFields}\" ng-click=\"$ctrl.deleteComponent($event,'populationOpt',7)\"> <span class=\"glyphicon glyphicon-trash\"></span></a>" +
+			"</div>";
+   ![image](https://github.com/adithyanandan/fidsample/assets/28766388/3fdd215f-eb14-4a96-85a0-3f0907eb6277)
