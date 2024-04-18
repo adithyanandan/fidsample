@@ -125,3 +125,15 @@ public class Main {
 			"<a href=\"\" ng-disabled=\"$ctrl.disabledFields\" ng-class=\"{disabled: $ctrl.disabledFields}\" ng-click=\"$ctrl.deleteComponent($event,'populationOpt',7)\"> <span class=\"glyphicon glyphicon-trash\"></span></a>" +
 			"</div>";
    ![image](https://github.com/adithyanandan/fidsample/assets/28766388/3fdd215f-eb14-4a96-85a0-3f0907eb6277)
+
+   $ctrl.changeHandler_POPULATIONIND = function (event) {
+    // Check if 'US' is selected
+    if ($ctrl.populationOpt === 'US') {
+        // Display additional fields 'ES' and 'NONES'
+        $ctrl.additionalFields = ['ES', 'NONES'];
+    } else {
+        // Hide additional fields for other options
+        $ctrl.additionalFields = [];
+    }
+};
+jqx-on-change=\"$ctrl.changeHandler_POPULATIONIND(event)\" jqx-on-close=\"$ctrl.closeHandler_POPULATIONIND(event)\"
