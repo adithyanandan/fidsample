@@ -150,3 +150,10 @@ jqx-on-change=\"$ctrl.changeHandler_POPULATIONIND(event)\" jqx-on-close=\"$ctrl.
 				   checkCombo($scope.pop_Opt, $ctrl.populationOpt);
 			   }
 		   };
+
+     Resilience and Hard Work: The film highlights the dedication and resilience of the McFarland cross country team. Despite numerous obstacles and limited resources, the students commit themselves to intense training and work hard to achieve success.
+Community and Family: "McFarland, USA" shows the importance of community support and the strength of family bonds. The coach learns to understand and appreciate the town's culture, and the team becomes like a family, supporting each other through challenges.
+Overcoming Prejudice: The film addresses themes of prejudice and cultural differences, showing how the coach and the students navigate and overcome stereotypes. The transformation of the coach's perspective on the Latino community is a key aspect of the story.
+Empowerment and Opportunity: By participating in cross country, the students discover new opportunities and pathways to success. The film emphasizes the potential for sports to empower individuals and provide them with life-changing experiences.
+Teamwork and Leadership: The development of teamwork and leadership skills is a central theme. Coach White's guidance and the team's collective effort demonstrate that great things can be achieved when people work together.
+Cultural Identity and Heritage: The film acknowledges the cultural identity of the students and shows how they embrace their heritage while striving for excellence in cross country. It promotes pride in one's background and the idea that cultural differences can be strengths rather than obstacles.
