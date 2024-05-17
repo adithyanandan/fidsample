@@ -157,3 +157,16 @@ Overcoming Prejudice: The film addresses themes of prejudice and cultural differ
 Empowerment and Opportunity: By participating in cross country, the students discover new opportunities and pathways to success. The film emphasizes the potential for sports to empower individuals and provide them with life-changing experiences.
 Teamwork and Leadership: The development of teamwork and leadership skills is a central theme. Coach White's guidance and the team's collective effort demonstrate that great things can be achieved when people work together.
 Cultural Identity and Heritage: The film acknowledges the cultural identity of the students and shows how they embrace their heritage while striving for excellence in cross country. It promotes pride in one's background and the idea that cultural differences can be strengths rather than obstacles.
+
+
+<dependency>
+    <groupId>jakarta.xml.soap</groupId>
+    <artifactId>jakarta.xml.soap-api</artifactId>
+    <version>2.0.0</version>
+</dependency>
+<dependency>
+    <groupId>com.sun.xml.messaging.saaj</groupId>
+    <artifactId>saaj-impl</artifactId>
+    <version>2.0.1</version>
+</dependency>
+
