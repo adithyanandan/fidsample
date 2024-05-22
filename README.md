@@ -170,3 +170,35 @@ Cultural Identity and Heritage: The film acknowledges the cultural identity of t
     <version>2.0.1</version>
 </dependency>
 
+
+function replacePlaceholders(template, values) {
+  // Extract placeholders from the template string
+  let regex = /%%(.*?)%%/g;
+  let match;
+  let placeholders = [];
+
+  // Find all placeholders in the template
+  while ((match = regex.exec(template)) !== null) {
+    placeholders.push(match[1]);
+  }
+
+  // Replace placeholders with corresponding values
+  placeholders.forEach(placeholder => {
+    if (values[placeholder]) {
+      template = template.replace(new RegExp(`%%${placeholder}%%`, 'g'), values[placeholder]);
+    }
+  });
+
+  return template;
+}
+
+// Example usage
+let template = "Your %%Product_Type%% will expire on %%Date_from%% to the percent %%DATE_TO%%";
+let values = {
+  Product_Type: "Subscription",
+  Date_from: "2024-05-22",
+  DATE_TO: "2024-06-22"
+};
+
+let result = replacePlaceholders(template, values);
+console.log(result); // Output: "Your Subscription will expire on 2024-05-22 to the percent 2024-06-22"
