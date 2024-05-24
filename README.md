@@ -203,23 +203,38 @@ let values = {
 let result = replacePlaceholders(template, values);
 console.log(result); // Output: "Your Subscription will expire on 2024-05-22 to the percent 2024-06-22"
 
+$scope.startRegex = '%%.*_START_DATE%%';
+							$scope.endRegex = '%%.*_END_DATE%%'
+							$scope.prodRegex='%%PI_PRODUCT_TYPE%%';
+							$scope.shareRegex='%%PI_PROCEED_TYPE%%';
+							$scope.taxMethodRegex ='%%PI_TAX_METHOD%%';
 
-$scope.parseDate = function (data) {
-								var tempUs = '';
-								data=data||'';
-								data=data.replace(/<date>/g,'').replace(/<\/date>/g,'');
-								if (data.match($scope.startRegex) && data.match($scope.endRegex)) {
-									var startDate = data.match($scope.startRegex)[0];
-									$scope.messageDetails = data.replace(startDate, '01/01/2017');
-									var endDate = $scope.messageDetails.match($scope.endRegex)[0];
-									$scope.messageDetails = $scope.messageDetails.replace(endDate, '12/31/2017');
-								} else if (data.match($scope.startRegex) && !data.match($scope.endRegex)) {
-									tempUs = data.match($scope.startRegex)[0];
-									$scope.messageDetails = data.replace(tempUs, '01/01/2017');
-								} else if (data.match($scope.endRegex) && !data.match($scope.startRegex)) {
-									tempUs = data.match($scope.endRegex)[0];
-									$scope.messageDetails = data.replace(tempUs, '12/31/2017');
-								} else {
-								if(!$scope.messageDetails)  {$scope.messageDetails=data;}
-								}
-							}
+
+$ctrl.parseDate = function (data) {
+			data = data || '';
+				
+					$ctrl.messageDetails = data;
+				
+			data = data.replace(/<date>/g, '').replace(/<\/date>/g, '');
+			var tempUs = '';
+			
+				if (data.match($ctrl.startRegex) && data.match($ctrl.endRegex)) {
+					var startDate = data.match($ctrl.startRegex)[0];
+					$ctrl.messageDetails = data.replace(startDate, '01/01/2017');
+					var endDate = $ctrl.messageDetails.match($ctrl.endRegex)[0];
+					$ctrl.messageDetails = $ctrl.messageDetails.replace(endDate, '12/31/2017');
+				} else if (data.match($ctrl.startRegex) && !data.match($ctrl.esharendRegex)) {
+					tempUs = data.match($ctrl.startRegex)[0];
+					$ctrl.messageDetails = data.replace(tempUs, '01/01/2017');
+				} else if (data.match($ctrl.endRegex) && !data.match($ctrl.startRegex)) {
+					tempUs = data.match($ctrl.endRegex)[0];
+					$ctrl.messageDetails = data.replace(tempUs, '12/31/2017');
+				} else if (data.match($ctrl.prodRegex)) {
+					$ctrl.messageDetails = data.replace($ctrl.prodRegex, 'PRODUCT(S)');
+				} else if (data.match($ctrl.shareRegex)) {
+					$ctrl.messageDetails = data.replace($ctrl.shareRegex, 'SHARES/PROCEEDS');
+				} else if (data.match($ctrl.taxMethodRegex)) {
+					$ctrl.messageDetails = data.replace($ctrl.taxMethodRegex, 'TAX METHOD');
+				}
+			
+		}
