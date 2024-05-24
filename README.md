@@ -202,3 +202,24 @@ let values = {
 
 let result = replacePlaceholders(template, values);
 console.log(result); // Output: "Your Subscription will expire on 2024-05-22 to the percent 2024-06-22"
+
+
+$scope.parseDate = function (data) {
+								var tempUs = '';
+								data=data||'';
+								data=data.replace(/<date>/g,'').replace(/<\/date>/g,'');
+								if (data.match($scope.startRegex) && data.match($scope.endRegex)) {
+									var startDate = data.match($scope.startRegex)[0];
+									$scope.messageDetails = data.replace(startDate, '01/01/2017');
+									var endDate = $scope.messageDetails.match($scope.endRegex)[0];
+									$scope.messageDetails = $scope.messageDetails.replace(endDate, '12/31/2017');
+								} else if (data.match($scope.startRegex) && !data.match($scope.endRegex)) {
+									tempUs = data.match($scope.startRegex)[0];
+									$scope.messageDetails = data.replace(tempUs, '01/01/2017');
+								} else if (data.match($scope.endRegex) && !data.match($scope.startRegex)) {
+									tempUs = data.match($scope.endRegex)[0];
+									$scope.messageDetails = data.replace(tempUs, '12/31/2017');
+								} else {
+								if(!$scope.messageDetails)  {$scope.messageDetails=data;}
+								}
+							}
