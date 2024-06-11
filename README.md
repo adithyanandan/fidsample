@@ -245,3 +245,27 @@ $ctrl.parseDate = function (data) {
                                             $scope.brokerNameNewCnt = row.variableValues.split(',');
                                             $ctrl.alertConfig.brokerNameNewCnt = row.labelName;
                                         } // FI,FIL
+
+     // modified
+     <div style="margin: 10px 0px 10px 0px;" ng-if="($ctrl.templateTypeCode == 'D' || $ctrl.templateTypeCode == 'F')">
+    <label class="font-thin">Broker Name&nbsp;</label>
+    <select ng-model="$ctrl.alertConfig.brokerNameNewCnt" ng-options="c for c in filteredBrokerNameNewCnt"></select>
+</div>
+
+if (row.variableName == 'PI_BROKER_NAME') {
+    let allBrokerNames = row.variableValues.split(',');
+    
+    // Assuming you have a filter condition variable
+    let filterCondition = 'US'; // Replace this with the actual condition check
+    
+    if (filterCondition == 'US') {
+        $scope.filteredBrokerNameNewCnt = allBrokerNames.filter(function(name) {
+            return name === 'FI';
+        });
+    } else {
+        $scope.filteredBrokerNameNewCnt = allBrokerNames;
+    }
+    
+    $ctrl.alertConfig.brokerNameNewCnt = row.labelName;
+}
+
