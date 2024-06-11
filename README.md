@@ -238,3 +238,10 @@ $ctrl.parseDate = function (data) {
 				}
 			
 		}
+<div style="margin: 10px 0px 10px 0px;" ng-if="($ctrl.templateTypeCode == 'D' || $ctrl.templateTypeCode == 'F')">
+				<label class="font-thin">Broker Name&nbsp;</label>  <select ng-model="$ctrl.alertConfig.brokerNameNewCnt" ng-options="c for c in brokerNameNewCnt"></select>
+			</div>
+   if (row.variableName == 'PI_BROKER_NAME'){
+                                            $scope.brokerNameNewCnt = row.variableValues.split(',');
+                                            $ctrl.alertConfig.brokerNameNewCnt = row.labelName;
+                                        } // FI,FIL
