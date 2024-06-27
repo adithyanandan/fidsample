@@ -269,3 +269,12 @@ if (row.variableName == 'PI_BROKER_NAME') {
     $ctrl.alertConfig.brokerNameNewCnt = row.labelName;
 }
 
+SELECT count(1)
+                                 FROM alrt_prsr_prtc app
+                                 JOIN alrt_prsr_prtc_dtl appd ON (app.alrt_prsr_prtc_id = appd.alrt_prsr_prtc_id)
+                                WHERE pi.plan_sponsor_id = app.plan_sponsor_id
+                                  AND pi.participant_id = app.participant_id
+                                  AND to_char(pi.PRTC_GRANT_ID) = app.grant_id
+                                  AND app.ALRT_CHN_ID = g_alrt_chn_id
+                                  AND appd.stat_c != 'M' and rownum=1) > 0
+
