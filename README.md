@@ -278,3 +278,51 @@ SELECT count(1)
                                   AND app.ALRT_CHN_ID = g_alrt_chn_id
                                   AND appd.stat_c != 'M' and rownum=1) > 0
 
+
+
+        INSERT INTO alrt_prsr_prtc(ALRT_PRSR_PRTC_ID, ALRT_PRSR_MST_ID, PLAN_SPONSOR_ID, CLNT_PKG_ID, CLNT_ALRT_CNFG_ID,
+                             PARTICIPANT_ID, TMPL_APLC_TO, ALRT_VAR_VAL,
+                             PRCS_D, INSERT_D, INSERT_USER, LST_UPD_D, LST_UPD_USER, ALRT_CHN_ID)
+  WITH grants AS
+                (
+                SELECT distinct
+                    gpl.plan_sponsor_id, gpl.participant_id, gpl.tmpl_aplc_to,
+    CASE when product_ty_c = 'RU' and NVL(pln.perf_awrd_i,'N') = 'N' then 'RSU'
+    when product_ty_c = 'RU' and NVL(pln.perf_awrd_i,'N') = 'Y' then 'PA'
+    ELSE product_ty_c
+    END product_ty_c ,
+    CASE WHEN rsu_proc_ty_c = 'S' THEN 'SHARES'
+    ELSE 'CASH'
+    END PROCTYPCODE
+    FROM gt_participant_list gpl
+    join participant_ra_trade prat on (gpl.plan_sponsor_id = prat.plan_sponsor_id and
+	                                   gpl.participant_id = prat.participant_id and
+									   prat.logical_delete_i='N')
+    join product pdct ON (prat.plan_sponsor_id = pdct.plan_sponsor_id and prat.product_id = pdct.product_id and
+	                      pdct.logical_delete_i = 'N')
+    join plan pln ON (pdct.plan_sponsor_id = pln.plan_sponsor_id and pdct.plan_id = pln.plan_id and
+	                  pln.logical_delete_i = 'N')
+
+    WHERE (((prat.tax_wh_meth_c IS NULL OR prat.tax_wh_meth_c <> 'S') AND trunc(prat.trx_d) = trunc(l_ref_date)) OR
+          (prat.tax_wh_meth_c = 'S' AND trunc(prat.trx_d) = trunc(l_stc_date)))
+      AND prat.rec_ty_c IN ('V', 'S')
+      and (prat.exec_stat_c is null or prat.exec_stat_c != 'C')
+      AND (prat.shr_dep_a > 0 OR prat.net_csh_proc_rsu_a > 0)
+      and ((prat.rsu_proc_ty_c = 'C' and prat.jrnl_ty_c ='F')
+	    OR (prat.rsu_proc_ty_c = 'S' and sale_avl_d IS NULL AND (prat.jrnl_ty_c IS NULL OR prat.jrnl_ty_c ='F')))
+	  AND prat.src_system_id = 1 --legacy grants
+   )
+        SELECT SEQ_ALRT_PRSR_PRTC_ID.NEXTVAL, g_alrt_prsr_mst_id, g_plan_sponsor_id, g_clnt_pkg_id, g_clnt_alrt_config_id,
+        participant_id, tmpl_aplc_to, 'PI_PRODUCT_TYPE='||NVL(cdn.dyn_nm , cdn2.dyn_nm)||';PI_PROCEED_TYPE='||PROCTYPCODE,
+        SYSDATE, SYSDATE, g_user, NULL, NULL, g_alrt_chn_id
+        from grants
+
+    LEFT JOIN clnt_dyn_nm cdn ON (grants.plan_sponsor_id = cdn.plan_sponsor_id AND
+                                  grants.product_ty_c = cdn.itrn_nm AND
+                                  cdn.appl_ty_c = 'PRDT_NM')
+    JOIN clnt_dyn_nm cdn2 ON (cdn2.plan_sponsor_id = 0 AND
+                              grants.product_ty_c = cdn2.itrn_nm AND
+                              cdn2.appl_ty_c = 'PRDT_NM');
+
+ END LOOP;
+
