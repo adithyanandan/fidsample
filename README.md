@@ -326,3 +326,19 @@ SELECT count(1)
 
  END LOOP;
 
+ SELECT distinct
+                    gpl.plan_sponsor_id, gpl.participant_id, gpl.tmpl_aplc_to,
+    CASE when product_ty_c = 'RU' and (pln.CSH_PLAN_I = 'T') then 'cash'
+         when product_ty_c = 'RU' and (pln.CSH_PLAN_I = 'P') then 'performance-based cash'
+         when product_ty_c = 'RU' and NVL(pln.perf_awrd_i,'N') = 'N' then 'RSU'
+    when product_ty_c = 'RU' and NVL(pln.perf_awrd_i,'N') = 'Y' then 'PA'
+    ELSE product_ty_c
+    END product_ty_c ,
+    CASE WHEN rsu_proc_ty_c = 'S' THEN 'SHARES'
+    ELSE 'CASH'
+    END PROCTYPCODE
+    FROM gt_participant_list gpl
+
+    You can do that way more efficiently by nesting logic under product_ty_c = 'RU' rather than having cases that check that field four separate times
+Your logic to set RSU and PA also applies to Cash, so even if this did compile, everything would still end up RSU and PA
+
