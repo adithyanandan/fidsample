@@ -342,3 +342,141 @@ SELECT count(1)
     You can do that way more efficiently by nesting logic under product_ty_c = 'RU' rather than having cases that check that field four separate times
 Your logic to set RSU and PA also applies to Cash, so even if this did compile, everything would still end up RSU and PA
 
+
+   MERGE INTO alrt_prsr_prtc_web_msg appwm
+  USING
+  (
+   WITH  A AS
+        (
+          SELECT  ggpl.plan_sponsor_id,ggpl.participant_id,awd.grant_tranche_id, ggpl.tmpl_aplc_to,pdct.src_product_id, pag.sub_product_ty_c,
+           Pag.Grant_D, Ltrim(Lpad(Substr(Pag.Seq_N,Length(Pag.Seq_N)-2,3),3,0),'0 ') As Seq_N, Pag.Grant_Id, Pln.Src_Plan_Id,Pln.Tsru_I,Pln.CSH_PLAN_I,Pln.Perf_Awrd_I,
+           Case When Pdct.Product_Ty_C = 'RU' and (pln.CSH_PLAN_I = 'T') then 'CSH'
+                 When Pdct.Product_Ty_C = 'RU' and (pln.CSH_PLAN_I = 'P') then 'PC'
+                    When Pdct.Product_Ty_C = 'RU' And Nvl(Pln.Perf_Awrd_I,'N') = 'N' And Nvl(Pln.Tsru_I,'N') = 'N' Then 'RSU'
+                        When Pdct.Product_Ty_C = 'RU' And Nvl(Pln.Perf_Awrd_I,'N') = 'Y' And Nvl(Pln.Tsru_I,'N') = 'N' Then 'PA'
+	                        When Pdct.Product_Ty_C = 'RU' And Nvl(Pln.Tsru_I,'N')='Y' Then 'TSRU'
+    ELSE pdct.product_ty_c
+    END product_ty_c , NVL(pag.tax_wh_meth_c, pdct.tax_wh_meth_c) tax_wh_meth_c, NVL(pag.tax_wh_def_c, pdct.tax_wh_def_c) tax_wh_def_c, awd.pay_d,
+	case when ps.RLUP_PLN_I = 'Y' then '' else pln.src_plan_id end drv_pln_id
+          FROM gt_grant_participant_list ggpl
+            JOIN plan_sponsor ps ON (ggpl.plan_sponsor_id = ps.plan_sponsor_id)
+            JOIN participant_award_grant pag ON (ggpl.plan_sponsor_id = pag.plan_sponsor_id AND
+                                                ggpl.participant_id = pag.participant_id AND
+                                                ggpl.grant_id=pag.grant_id AND
+                                                pag.logical_delete_i = 'N')
+            JOIN grant_tranche gt ON (pag.plan_sponsor_id = gt.plan_sponsor_id AND
+                                       pag.grant_id = gt.grant_id AND
+                                       gt.logical_delete_i = 'N')
+            JOIN award_distribution awd ON(pag.plan_sponsor_id = awd.plan_sponsor_id AND
+                                            gt.grant_tranche_id = awd.grant_tranche_id AND
+                                            awd.logical_delete_i = 'N')
+			JOIN participant_detail pd ON(ggpl.plan_sponsor_id=pd.plan_sponsor_id AND
+                                          ggpl.participant_id = pd.participant_id)
+            JOIN product pdct ON (pag.plan_sponsor_id = pdct.plan_sponsor_id AND
+                                  pag.product_id = pdct.product_id AND
+                                  pdct.logical_delete_i = 'N')
+            JOIN plan pln ON (ggpl.plan_sponsor_id = pln.plan_sponsor_id AND
+                               pdct.plan_id = pln.plan_id AND
+                               pln.logical_delete_i = 'N')
+            LEFT JOIN grant_agreement gag ON (pag.plan_sponsor_id=gag.plan_sponsor_id AND
+                                             pag.grant_id = gag.grant_id AND
+                                             gag.logical_delete_i = 'N')
+            JOIN grant_status gs ON (pag.plan_sponsor_id = gs.plan_sponsor_id AND
+                                  pag.product_id = gs.product_id AND
+                                  pag.sub_product_ty_c = gs.sub_product_ty_c AND
+                                  pag.grant_d = gs.grant_d AND
+                                  gs.seq_n = CASE WHEN ps.admin_ty_c = 'PA' THEN 1 ELSE pag.seq_n END AND
+                                  gs.logical_delete_i = 'N')
+
+         WHERE awd.pay_d between rec.start_date AND rec.end_date AND (awd.admin_only_c != 'D' OR awd.admin_only_c is NULL)
+           AND awd.dist_stat_c = 'P'
+           AND gt.shr_tot_a <> shr_cncl_a and gt.shr_exercisable_a > 0 and (gt.shr_cncl_d > l_ref_date OR gt.shr_cncl_d IS NULL)
+           AND pd.enrl_rsu_i='Y'  AND pd.wh_tax_i='Y'
+           AND (pd.admin_only_c IS NULL OR pd.admin_only_c='N')
+           AND (pag.cancel_d is null or pag.cancel_d > l_ref_date)
+           AND pag.shr_granted_a <> pag.shr_exer_a
+           AND pag.opt_ostd_a > 0
+           AND pag.sub_product_ty_c IN('RSU')
+           AND coalesce(pag.tax_wh_def_c,pdct.tax_wh_def_c) IN ('C','N','S')
+           AND coalesce(pag.tax_wh_meth_c,pdct.tax_wh_meth_c) IN ('B','A','M','O','N','C','S')
+           AND (pag.byp_tx_calc_i IS NULL OR pag.byp_tx_calc_i ='N')
+           AND (pdct.oga_svc_i IS NULL OR pdct.oga_svc_i = 'N' OR ((pdct.oga_svc_i = 'Y' OR pdct.oga_svc_i = 'C') AND pag.acp_dcln_c = 'A'))
+	       AND (pdct.oga_svc_i IS NULL OR pdct.oga_svc_i = 'N' OR ((pdct.oga_svc_i = 'Y' OR pdct.oga_svc_i = 'C') AND gag.acp_dcln_i= 'A'))
+           AND (pln.pub_client_i='Y' OR (pln.pub_client_i='N' and COALESCE(pdct.shr_proc_i,'N') ='N'))
+           AND pdct.product_ty_c IN('RU')
+           AND gs.grant_stat_c = 'A'
+           AND (gs.web_trading_i = 'Y' OR gs.rep_trading_i = 'Y' OR gs.wireless_trading_i = 'Y' OR gs.phone_trading_i = 'Y')
+           AND pag.plan_sponsor_id = g_plan_sponsor_id and pag.src_system_id = 1 -- MF Grants
+
+       ),
+       b AS
+           (
+             SELECT grant_id, grant_tranche_id, plan_sponsor_id, tax_meth_elct_c,
+             'PI_PROD_ID='||src_product_id||';PI_SUB_PROD_TY_CD='||sub_product_ty_c||
+            ';PI_GRANT_DATE='||to_char(grant_d,'YYYY-MM-DD')||';PI_GRANT_SEQ_NUM='||seq_n||
+            ';PI_GRANT_ID='||grant_id||
+            ';PI_PLAN_ID='||drv_pln_id||
+            ';PI_PLAN_TY_C='||
+            CASE WHEN sub_product_ty_c IN ('RSU') AND NVL(tsru_i,'N')='Y' THEN 'T'
+                WHEN sub_product_ty_c IN ('RSU') AND NVL(perf_awrd_i,'N') = 'Y' AND NVL(tsru_i,'N') = 'N' THEN 'E'
+                WHEN sub_product_ty_c IN ('RSU') AND  NVL(perf_awrd_i,'N') = 'N' AND NVL(tsru_i,'N') ='N' THEN 'N'
+            END||
+           ';PI_PRODUCT_TYPE='||product_ty_c||
+           ';PI_RESTRICTED_RELEASE_DATE='||to_char(pay_d,'fmMonth DD, YYYY')||
+           ';PI_TAX_METHOD_CHOICE='||
+           CASE WHEN tax_wh_meth_c IN('B','A','M','O') THEN 'CHOICE' ELSE 'NOCHOICE' END ||
+           ';PI_TAX_METHOD='||
+           CASE WHEN tax_wh_meth_c IN('B','A','M','O') AND COALESCE(tax_meth_elct_c, tax_wh_def_c ,tax_wh_meth_c)='N' THEN 'Net Shares'
+                WHEN tax_wh_meth_c IN('B','A','M','O') AND COALESCE(tax_meth_elct_c, tax_wh_def_c ,tax_wh_meth_c)='S' THEN 'Sell Shares'
+                WHEN tax_wh_meth_c IN('B','A','M','O') AND COALESCE(tax_meth_elct_c, tax_wh_def_c ,tax_wh_meth_c)='C' THEN 'Deposit Funds'
+								WHEN COALESCE(tax_wh_def_c ,tax_wh_meth_c)='N' THEN 'Net Shares'
+                WHEN COALESCE(tax_wh_def_c ,tax_wh_meth_c)='S' THEN 'Sell Shares'
+                WHEN COALESCE(tax_wh_def_c ,tax_wh_meth_c)='C' THEN 'Deposit Funds'
+           END || ';PI_PARTICIPANT_ID='||participant_id  alrt_var_val ,
+           ROW_NUMBER() OVER(PARTITION BY participant_id,drv_pln_id,(Case When Product_Ty_C = 'RU' and (CSH_PLAN_I = 'T') then 'CSH'
+            When Product_Ty_C = 'RU' and (CSH_PLAN_I = 'P') then 'PC'
+                When Product_Ty_C = 'RU' And Nvl(Perf_Awrd_I,'N') = 'N' And Nvl(Tsru_I,'N') = 'N' Then 'RSU'
+			        When Product_Ty_C = 'RU' And Nvl(Perf_Awrd_I,'N') = 'Y' And Nvl(Tsru_I,'N') = 'N' Then 'PA'
+			When Product_Ty_C = 'RU' And Nvl(Tsru_I,'N')='Y' Then 'TSRU'
+			ELSE product_ty_c END) , pay_d,
+            (CASE WHEN tax_wh_meth_c IN ('B','A','M','O') THEN 'CHOICE' ELSE 'NOCHOICE' END),
+            (CASE WHEN tax_wh_meth_c IN('B','A','M','O') AND COALESCE(tax_meth_elct_c, tax_wh_def_c ,tax_wh_meth_c)='N' THEN 'Net Shares'
+                WHEN tax_wh_meth_c IN('B','A','M','O') AND COALESCE(tax_meth_elct_c, tax_wh_def_c ,tax_wh_meth_c)='S' THEN 'Sell Shares'
+                WHEN tax_wh_meth_c IN('B','A','M','O') AND COALESCE(tax_meth_elct_c, tax_wh_def_c ,tax_wh_meth_c)='C' THEN 'Deposit Funds'
+								WHEN COALESCE(tax_wh_def_c ,tax_wh_meth_c)='N' THEN 'Net Shares'
+                WHEN COALESCE(tax_wh_def_c ,tax_wh_meth_c)='S' THEN 'Sell Shares'
+                WHEN COALESCE(tax_wh_def_c ,tax_wh_meth_c)='C' THEN 'Deposit Funds'
+            END)  ORDER BY grant_id) bundle_rnk,
+           tmpl_aplc_to,participant_id
+           FROM (
+                     SELECT src_plan_id, src_product_id, seq_n, sub_product_ty_c,  grant_d, th.tax_meth_elct_c,a.participant_id ,a.grant_tranche_id,a.grant_id,a.tax_wh_def_c,a.tax_wh_meth_c,a.plan_sponsor_id,a.tmpl_aplc_to,
+                    ROW_NUMBER() OVER(PARTITION BY A.participant_id, A.grant_tranche_id, A.plan_sponsor_id ORDER BY th.upd_tmst DESC) as rnk, NVL(cdn.dyn_nm , cdn2.dyn_nm) product_ty_c, pay_d, tsru_i, perf_awrd_i,  drv_pln_id
+                 From  A Left Join Participant_Tax_Meth Th On(A.Plan_Sponsor_Id = Th.Plan_Sponsor_Id And
+                                              a.grant_tranche_id = th.grant_tranche_id)
+                                             LEFT JOIN clnt_dyn_nm cdn ON (a.plan_sponsor_id = cdn.plan_sponsor_id AND
+                                  a.product_ty_c = cdn.itrn_nm AND
+                                  cdn.appl_ty_c = 'PRDT_NM')
+            JOIN clnt_dyn_nm cdn2 ON (cdn2.plan_sponsor_id = 0 AND
+                              A.Product_Ty_C = Cdn2.Itrn_Nm And
+                              cdn2.appl_ty_c = 'PRDT_NM' )where th.tax_meth_elct_c is null or th.tax_meth_elct_c IN ('C','N','S')) s
+                        WHERE s.rnk = 1
+      )
+	   SELECT distinct  b.plan_sponsor_id , b.participant_id, b.tmpl_aplc_to, b.alrt_var_val, g_message_id message_id
+            from b where bundle_rnk =1
+    ) upd
+     ON (appwm.plan_sponsor_id = upd.plan_sponsor_id AND
+         appwm.participant_id = upd.participant_id AND
+         appwm.alrt_var_val = upd.alrt_var_val AND
+         appwm.message_id = upd.message_id)
+   WHEN MATCHED THEN
+        UPDATE SET eff_end_dt = to_timestamp(to_char (sysdate+1, 'dd-mm-YYYY') || '080000.00', 'dd-mm-YYYYhh24miss.ff'),
+                   logical_delete_i = 'N',
+                   lst_upd_d = SYSDATE,
+                   lst_upd_user = user;
+    END LOOP;
+  END IF;
+END IF;
+
+10174/4  PL/SQL: SQL Statement ignored                                          
+10265/43 PL/SQL: ORA-00904: "CSH_PLAN_I": invalid identifier   
+
