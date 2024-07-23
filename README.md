@@ -532,3 +532,28 @@ END IF;
         Assert.assertEquals(expected, result);
     }
 
+@Test
+public void testCreateFile() throws Exception {
+    // Mocking the sparkVelocityEngine
+    SparkVelocityEngine sparkVelocityEngine = mock(SparkVelocityEngine.class);
+    doNothing().when(sparkVelocityEngine).mergeTemplate(anyString(), any(Object.class), any(Writer.class));
+    printFileCreationHandler.setSparkVelocityEngine(sparkVelocityEngine); // Assuming there is a setter or constructor injection
+
+    // Arrange
+    FDCParticipant participant = new FDCParticipant();
+    List<FDCParticipant> participants = List.of(participant);
+    String batchId = "batchId";
+    
+    // Act
+    String result = printFileCreationHandler.createFile(participants, batchId);
+
+    // Assert
+    verify(sparkVelocityEngine).mergeTemplate(anyString(), any(Object.class), any(Writer.class));
+
+    // Expected file name pattern
+    DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm");
+    String now = LocalDateTime.now().format(format);
+    String expected = "C:\\Users\\A762485\\AppData\\Local\\Temp\\" + fileNamePrefix + now + batchId + ".TXT";
+    Assert.assertEquals(expected, result);
+}
+
