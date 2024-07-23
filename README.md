@@ -556,4 +556,6 @@ public void testCreateFile() throws Exception {
     String expected = "C:\\Users\\A762485\\AppData\\Local\\Temp\\" + fileNamePrefix + now + batchId + ".TXT";
     Assert.assertEquals(expected, result);
 }
+Expected :C:\Users\A762485\AppData\Local\Temp\your_file_prefix2024-07-23-11-15batchId.TXT
+Actual   :C:\Users\A762485\AppData\Local\Temp\null2024-07-23-11-15batchId17671265934334347063.TXT
 
