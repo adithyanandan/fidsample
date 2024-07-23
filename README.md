@@ -560,3 +560,5 @@ Expected :C:\Users\A762485\AppData\Local\Temp\your_file_prefix2024-07-23-11-15ba
 Actual   :C:\Users\A762485\AppData\Local\Temp\null2024-07-23-11-15batchId17671265934334347063.TXT
 // Use a regular expression to match the dynamic part of the file name
     String expectedPattern = "C:\\\\Users\\\\A762485\\\\AppData\\\\Local\\\\Temp\\\\your_file_prefix" + now + batchId + "\\d+\\.TXT";
+    String tempDir = System.getProperty("java.io.tmpdir");
+    String expectedPattern = tempDir + "your_file_prefix" + now + batchId + "\\d+\\.TXT";
