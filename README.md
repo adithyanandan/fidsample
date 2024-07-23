@@ -480,3 +480,55 @@ END IF;
 10174/4  PL/SQL: SQL Statement ignored                                          
 10265/43 PL/SQL: ORA-00904: "CSH_PLAN_I": invalid identifier   
 
+
+ public String createFile(List<FDCParticipant> payLoadList, String batchId) throws NeoSystemException {
+        try {
+            
+            FileWriter filewriter = new FileWriter(fileNamePrefix + getFileNameFormat(batchId), 8 * 1024, "", ".TXT");
+            
+            Writer writer = new StringWriter();
+            
+            
+            FDCPrintFeed prtc = new FDCPrintFeed();
+            SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
+            
+            
+            String tempDate = dt.format(new Date());
+            prtc.setLst(payLoadList);
+            
+            prtc.setCnt(StringUtils.leftPad(""+payLoadList.size(), 9, '0'));
+            prtc.setDate(tempDate);
+            
+            sparkVelocityEngine.mergeTemplate(fileLocation, prtc, writer);
+            filewriter.put(writer.toString());
+            filewriter.jobFinished();
+            filewriter.getFile(true);
+            return filewriter.getFile(true).getPath();
+        } catch (Exception e) {
+            throw new NeoSystemException(e);
+        }
+        
+    }
+
+    
+
+    private String getFileNameFormat(String requestId) {
+    	DateTimeFormatter format =  DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm");
+        //Get current date time
+          LocalDateTime now = LocalDateTime.now();
+          String dt = now.format(format);
+      
+        return dt + requestId;
+    }
+
+     @Test
+    public void testCreateFile() throws Exception {
+       
+
+        String expected = "C:\\Users\\A762485\\AppData\\Local\\Temp\\null2024-07-19-17-09batchId14249574639089173738.TXT";
+        String result = printFileCreationHandler.createFile(List.of(new FDCParticipant()), "batchId");
+        System.out.println(result);
+        verify(sparkVelocityEngine).mergeTemplate(anyString(), any(Object.class), any(Writer.class));
+        Assert.assertEquals(expected, result);
+    }
+
