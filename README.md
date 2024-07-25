@@ -562,3 +562,28 @@ Actual   :C:\Users\A762485\AppData\Local\Temp\null2024-07-23-11-15batchId1767126
     String expectedPattern = "C:\\\\Users\\\\A762485\\\\AppData\\\\Local\\\\Temp\\\\your_file_prefix" + now + batchId + "\\d+\\.TXT";
     String tempDir = System.getProperty("java.io.tmpdir");
     String expectedPattern = tempDir + "your_file_prefix" + now + batchId + "\\d+\\.TXT";
+
+
+    <settings>
+  <servers>
+    <server>
+      <id>central</id>
+      <configuration>
+        <httpConfiguration>
+          <all>
+            <params>
+              <param>
+                <name>http.ssl.insecure</name>
+                <value>true</value>
+              </param>
+              <param>
+                <name>http.ssl.allowall</name>
+                <value>true</value>
+              </param>
+            </params>
+          </all>
+        </httpConfiguration>
+      </configuration>
+    </server>
+  </servers>
+</settings>
